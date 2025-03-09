@@ -554,7 +554,13 @@ if ctypes is not None:
                     'as_array() requires a shape argument when called on a '
                     'pointer')
             
-            # Create a flat array first
+            # Special case for empty shape (scalars)
+            if shape == ():
+                p_arr_type = ctypes.POINTER(_ctype_ndarray(obj._type_, shape))
+                obj = ctypes.cast(obj, p_arr_type).contents
+                return np.asarray(obj)
+            
+            # For non-empty shapes, create a flat array first
             flat_shape = (np.prod(shape, dtype=np.intp),)
             p_arr_type = ctypes.POINTER(_ctype_ndarray(obj._type_, flat_shape))
             flat_array = np.asarray(ctypes.cast(obj, p_arr_type).contents)
