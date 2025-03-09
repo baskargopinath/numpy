@@ -362,3 +362,29 @@ def check_npy_uintp_type_enum():
     # Regression test for gh-27890: cnp.NPY_UINTP was not defined.
     # Cython would fail to compile this before gh-27890 was fixed.
     return cnp.NPY_UINTP > 0
+
+# For testing fix for issue #28446
+def test_npyiter_iternext_return_type():
+    """Test that NpyIter_GetIterNext returns the correct type."""
+    # Import directly from multiarray to avoid the errors with missing symbols
+    from numpy.core.multiarray cimport (
+        PyArray_IterNew, NpyIter_GetIterNext, NpyIter_Deallocate,
+        NpyIter, NpyIter_IterNextFunc
+    )
+    
+    cdef:
+        cnp.ndarray arr = cnp.array([1.0, 2.0, 3.0], dtype=cnp.float64)
+        NpyIter* it
+        NpyIter_IterNextFunc iternext
+        
+    # This will fail to compile if NpyIter_GetIterNext return type is incorrectly declared
+    it = PyArray_IterNew(<object>arr)
+    if it == NULL:
+        return -1
+        
+    # This line tests the fix - it assigns the return value to a 
+    # NpyIter_IterNextFunc variable
+    iternext = NpyIter_GetIterNext(it, NULL)
+    
+    NpyIter_Deallocate(it)
+    return 0  # Success

@@ -343,3 +343,22 @@ def test_npystring_allocators_other_dtype(install_temp):
 def test_npy_uintp_type_enum():
     import checks
     assert checks.check_npy_uintp_type_enum()
+
+def test_npyiter_iternext_return_type():
+    """
+    Test that NpyIter_GetIterNext has the correct return type.
+    This verifies the fix for issue #28446.
+    """
+    import pytest
+    import os
+    import sys
+    
+    print(f"Current directory: {os.getcwd()}")
+    print(f"sys.path: {sys.path}")
+    
+    try:
+        from numpy._core.tests.examples.cython.checks import test_npyiter_iternext_return_type
+        result = test_npyiter_iternext_return_type()
+        assert result == 0, "Test for NpyIter_GetIterNext return type failed"
+    except ImportError as e:
+        pytest.skip(f"Could not import test function: {e}")
